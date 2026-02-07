@@ -45,6 +45,15 @@ resource "github_branch_protection" "main" {
   required_pull_request_reviews {
     required_approving_review_count = var.required_pr_reviews
     dismiss_stale_reviews           = true
+    require_code_owner_reviews      = true
+  }
+
+  required_status_checks {
+    strict = true
+    contexts = [
+      "Backend Build & Test",
+      "Frontend Build & Test",
+    ]
   }
 
   enforce_admins = false

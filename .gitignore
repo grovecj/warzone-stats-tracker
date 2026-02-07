@@ -1,0 +1,47 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/server
+/bin/
+
+# Go
+*.test
+*.out
+vendor/
+
+# Node / Frontend
+web/node_modules/
+web/dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Terraform
+terraform/**/*.tfvars
+!terraform/**/*.tfvars.example
+terraform/**/*.tfstate
+terraform/**/*.tfstate.backup
+terraform/**/.terraform/
+terraform/**/.terraform.lock.hcl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log

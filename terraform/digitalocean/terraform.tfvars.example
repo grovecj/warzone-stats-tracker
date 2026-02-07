@@ -1,0 +1,29 @@
+# Digital Ocean API Token
+# Generate at: https://cloud.digitalocean.com/account/api/tokens
+do_token = "dop_v1_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Region — choose the region closest to you / your users
+# Common: nyc1, nyc3, sfo3, lon1, ams3, fra1
+region = "nyc1"
+
+# Existing PostgreSQL cluster ID
+# Find via: doctl databases list
+postgres_cluster_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# Application database (created on your existing PG cluster)
+# app_database_name = "warzone_stats_tracker"
+# app_database_user = "warzone_app"
+
+# App Platform settings
+# app_name      = "warzone-stats-tracker"
+# github_repo   = "grovecj/warzone-stats-tracker"
+# deploy_branch = "main"
+# instance_size = "apps-s-1vcpu-0.5gb"
+
+# Call of Duty SSO Token
+# Obtain from: Log into my.callofduty.com → DevTools → Application → Cookies → ACT_SSO_COOKIE
+# Expires every ~14 days — update when it does
+cod_sso_token = "your-sso-token-here"
+
+# Custom domain (optional — leave empty to use DO default domain)
+# domain_name = "warzone.yourdomain.com"

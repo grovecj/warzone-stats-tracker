@@ -1,0 +1,13 @@
+# GitHub Personal Access Token
+# Generate at: https://github.com/settings/tokens
+# Required scopes: repo, admin:org (for branch protection)
+github_token = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# GitHub username or organization
+github_owner = "your-github-username"
+
+# Repository settings (optional overrides)
+# repository_name        = "warzone-stats-tracker"
+# repository_description = "Call of Duty Warzone statistics tracker."
+# default_branch         = "main"
+# required_pr_reviews    = 1

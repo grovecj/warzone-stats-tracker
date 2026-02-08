@@ -15,8 +15,10 @@ import (
 
 // Deps holds dependencies injected into the router.
 type Deps struct {
-	AdminHandler *handler.AdminHandler
-	AdminAPIKey  string
+	AdminHandler  *handler.AdminHandler
+	PlayerHandler *handler.PlayerHandler
+	MatchHandler  *handler.MatchHandler
+	AdminAPIKey   string
 }
 
 func New(allowedOrigins []string, staticFS fs.FS, deps Deps) http.Handler {
@@ -39,11 +41,20 @@ func New(allowedOrigins []string, staticFS fs.FS, deps Deps) http.Handler {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/health", handler.Health)
 
-		// Player routes (issue #9)
+		// Player routes
 		r.Route("/players", func(r chi.Router) {
-			r.Get("/search", handler.NotImplemented)
-			r.Get("/{platform}/{gamertag}/stats", handler.NotImplemented)
-			r.Get("/{platform}/{gamertag}/matches", handler.NotImplemented)
+			if deps.PlayerHandler != nil {
+				r.Get("/search", deps.PlayerHandler.SearchPlayer)
+				r.Get("/{platform}/{gamertag}/stats", deps.PlayerHandler.GetStats)
+			} else {
+				r.Get("/search", handler.NotImplemented)
+				r.Get("/{platform}/{gamertag}/stats", handler.NotImplemented)
+			}
+			if deps.MatchHandler != nil {
+				r.Get("/{platform}/{gamertag}/matches", deps.MatchHandler.GetMatches)
+			} else {
+				r.Get("/{platform}/{gamertag}/matches", handler.NotImplemented)
+			}
 		})
 
 		// Comparison routes (issue #14)

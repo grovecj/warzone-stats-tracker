@@ -27,7 +27,7 @@ func (r *MatchRepo) UpsertBatch(ctx context.Context, playerID string, matches []
 			INSERT INTO matches (match_id, player_id, mode, map_name, placement, kills, deaths,
 				damage_dealt, damage_taken, gulag_result, match_time, raw_data)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-			ON CONFLICT (match_id) DO NOTHING
+			ON CONFLICT (match_id, player_id) DO NOTHING
 		`, m.MatchID, playerID, m.Mode, m.MapName, m.Placement,
 			m.Kills, m.Deaths, m.DamageDealt, m.DamageTaken,
 			m.GulagResult, m.MatchTime, rawJSON)
@@ -70,4 +70,10 @@ func (r *MatchRepo) GetByPlayerID(ctx context.Context, playerID string, limit, o
 		return nil, err
 	}
 	return matches, nil
+}
+
+func (r *MatchRepo) CountByPlayerID(ctx context.Context, playerID string) (int, error) {
+	var count int
+	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM matches WHERE player_id = $1`, playerID).Scan(&count)
+	return count, err
 }

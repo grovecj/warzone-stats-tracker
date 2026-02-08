@@ -21,8 +21,24 @@ type PlayerStats struct {
 	TopFive       int     `json:"topFive"`
 	TopTen        int     `json:"topTen"`
 	TopTwentyFive int     `json:"topTwentyFive"`
-	Assists       int     `json:"assists"`
-	DamageDone    int     `json:"damageDone"`
+	Assists       int                    `json:"assists"`
+	DamageDone    int                    `json:"damageDone"`
+	ModeBreakdown map[string]ModeStats   `json:"modeBreakdown,omitempty"`
+}
+
+// ModeStats represents per-mode statistics from the CoD API.
+type ModeStats struct {
+	Kills         int     `json:"kills"`
+	Deaths        int     `json:"deaths"`
+	KDRatio       float64 `json:"kdRatio"`
+	Wins          int     `json:"wins"`
+	Losses        int     `json:"losses"`
+	MatchesPlayed int     `json:"matchesPlayed"`
+	ScorePerMin   float64 `json:"scorePerMin"`
+	TimePlayed    int     `json:"timePlayed"`
+	TopFive       int     `json:"topFive"`
+	TopTen        int     `json:"topTen"`
+	TopTwentyFive int     `json:"topTwentyFive"`
 }
 
 // Match represents a single match from the CoD API.
@@ -58,8 +74,8 @@ type profileResponse struct {
 			All  map[string]statsBlock `json:"all"`
 			Mode map[string]any        `json:"mode"`
 		} `json:"lifetime"`
-		Level   int `json:"level"`
-		Prestige int `json:"prestige"`
+		Level    float64 `json:"level"`
+		Prestige float64 `json:"prestige"`
 	} `json:"data"`
 }
 

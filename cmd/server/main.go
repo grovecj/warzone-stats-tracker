@@ -17,7 +17,9 @@ import (
 	"github.com/grovecj/warzone-stats-tracker/internal/config"
 	"github.com/grovecj/warzone-stats-tracker/internal/database"
 	"github.com/grovecj/warzone-stats-tracker/internal/handler"
+	"github.com/grovecj/warzone-stats-tracker/internal/repository"
 	"github.com/grovecj/warzone-stats-tracker/internal/router"
+	"github.com/grovecj/warzone-stats-tracker/internal/service"
 	"github.com/grovecj/warzone-stats-tracker/web"
 )
 
@@ -62,8 +64,18 @@ func main() {
 		}
 	}
 
+	// Repositories
+	playerRepo := repository.NewPlayerRepo(pool)
+	matchRepo := repository.NewMatchRepo(pool)
+
+	// Services
+	playerService := service.NewPlayerService(cachedAPI, playerRepo)
+	matchService := service.NewMatchService(cachedAPI, matchRepo, playerRepo)
+
 	// Handlers
 	adminHandler := handler.NewAdminHandler(cachedAPI)
+	playerHandler := handler.NewPlayerHandler(playerService)
+	matchHandler := handler.NewMatchHandler(matchService)
 
 	// Router
 	rawOrigins := strings.Split(cfg.CORSAllowedOrigins, ",")
@@ -74,8 +86,10 @@ func main() {
 		}
 	}
 	mux := router.New(origins, staticFS, router.Deps{
-		AdminHandler: adminHandler,
-		AdminAPIKey:  cfg.AdminAPIKey,
+		AdminHandler:  adminHandler,
+		PlayerHandler: playerHandler,
+		MatchHandler:  matchHandler,
+		AdminAPIKey:   cfg.AdminAPIKey,
 	})
 
 	srv := &http.Server{

@@ -1,19 +1,48 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import type { PlayerStats, Match } from '@/types'
+import type { PlayerStats, Match, PlayerSearchResult, MatchListResult } from '@/types'
 
 export const usePlayerStore = defineStore('player', () => {
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  const statsLoading = ref(false)
+  const matchesLoading = ref(false)
+  const statsError = ref<string | null>(null)
+  const matchesError = ref<string | null>(null)
   const stats = ref<PlayerStats | null>(null)
   const matches = ref<Match[]>([])
+  const matchesTotal = ref(0)
 
-  async function fetchStats(platform: string, gamertag: string, mode = 'wz') {
-    loading.value = true
-    error.value = null
+  async function searchPlayer(
+    platform: string,
+    gamertag: string,
+    title = 'mw',
+    mode = 'wz',
+  ): Promise<PlayerSearchResult> {
+    const tag = encodeURIComponent(gamertag)
+    const res = await fetch(
+      `/api/v1/players/search?platform=${encodeURIComponent(platform)}&gamertag=${tag}&title=${encodeURIComponent(title)}&mode=${encodeURIComponent(mode)}`,
+    )
+    if (!res.ok) {
+      const text = await res.text()
+      let message = 'Failed to search player'
+      try {
+        const body = JSON.parse(text)
+        message = body.message || message
+      } catch {
+        // Response was not JSON
+      }
+      throw new Error(message)
+    }
+    return await res.json()
+  }
+
+  async function fetchStats(platform: string, gamertag: string, title = 'mw', mode = 'wz') {
+    statsLoading.value = true
+    statsError.value = null
     try {
       const tag = encodeURIComponent(gamertag)
-      const res = await fetch(`/api/v1/players/${platform}/${tag}/stats?mode=${encodeURIComponent(mode)}`)
+      const res = await fetch(
+        `/api/v1/players/${platform}/${tag}/stats?title=${encodeURIComponent(title)}&mode=${encodeURIComponent(mode)}`,
+      )
       if (!res.ok) {
         const text = await res.text()
         let message = 'Failed to fetch stats'
@@ -27,18 +56,20 @@ export const usePlayerStore = defineStore('player', () => {
       }
       stats.value = await res.json()
     } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'An unexpected error occurred'
+      statsError.value = e instanceof Error ? e.message : 'An unexpected error occurred'
     } finally {
-      loading.value = false
+      statsLoading.value = false
     }
   }
 
-  async function fetchMatches(platform: string, gamertag: string) {
-    loading.value = true
-    error.value = null
+  async function fetchMatches(platform: string, gamertag: string, title = 'mw', mode = 'wz', limit = 20, offset = 0) {
+    matchesLoading.value = true
+    matchesError.value = null
     try {
       const tag = encodeURIComponent(gamertag)
-      const res = await fetch(`/api/v1/players/${platform}/${tag}/matches`)
+      const res = await fetch(
+        `/api/v1/players/${platform}/${tag}/matches?title=${encodeURIComponent(title)}&mode=${encodeURIComponent(mode)}&limit=${limit}&offset=${offset}`,
+      )
       if (!res.ok) {
         const text = await res.text()
         let message = 'Failed to fetch matches'
@@ -50,15 +81,28 @@ export const usePlayerStore = defineStore('player', () => {
         }
         throw new Error(message)
       }
-      matches.value = await res.json()
+      const result: MatchListResult = await res.json()
+      matches.value = result.matches ?? []
+      matchesTotal.value = result.total
     } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'An unexpected error occurred'
+      matchesError.value = e instanceof Error ? e.message : 'An unexpected error occurred'
     } finally {
-      loading.value = false
+      matchesLoading.value = false
     }
   }
 
-  return { loading, error, stats, matches, fetchStats, fetchMatches }
+  return {
+    statsLoading,
+    matchesLoading,
+    statsError,
+    matchesError,
+    stats,
+    matches,
+    matchesTotal,
+    searchPlayer,
+    fetchStats,
+    fetchMatches,
+  }
 })
 
 export const useSquadStore = defineStore('squad', () => {

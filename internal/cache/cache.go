@@ -60,15 +60,15 @@ func New(inner codclient.CodClient, cfg Config) *CachedClient {
 	return c
 }
 
-func (c *CachedClient) GetPlayerStats(ctx context.Context, platform, gamertag, mode string) (*codclient.PlayerStats, error) {
-	key := fmt.Sprintf("stats:%s:%s:%s", platform, gamertag, mode)
+func (c *CachedClient) GetPlayerStats(ctx context.Context, platform, gamertag, title, mode string) (*codclient.PlayerStats, error) {
+	key := fmt.Sprintf("stats:%s:%s:%s:%s", platform, gamertag, title, mode)
 
 	if val, hit := c.get(key); hit {
 		slog.Debug("cache hit", "key", key)
 		return val.(*codclient.PlayerStats), nil
 	}
 
-	stats, err := c.inner.GetPlayerStats(ctx, platform, gamertag, mode)
+	stats, err := c.inner.GetPlayerStats(ctx, platform, gamertag, title, mode)
 	if err != nil {
 		// Only serve stale data for transient errors (API down, rate limited)
 		if isTransientError(err) {
@@ -84,15 +84,15 @@ func (c *CachedClient) GetPlayerStats(ctx context.Context, platform, gamertag, m
 	return stats, nil
 }
 
-func (c *CachedClient) GetRecentMatches(ctx context.Context, platform, gamertag string) ([]codclient.Match, error) {
-	key := fmt.Sprintf("matches:%s:%s", platform, gamertag)
+func (c *CachedClient) GetRecentMatches(ctx context.Context, platform, gamertag, title, mode string) ([]codclient.Match, error) {
+	key := fmt.Sprintf("matches:%s:%s:%s:%s", platform, gamertag, title, mode)
 
 	if val, hit := c.get(key); hit {
 		slog.Debug("cache hit", "key", key)
 		return val.([]codclient.Match), nil
 	}
 
-	matches, err := c.inner.GetRecentMatches(ctx, platform, gamertag)
+	matches, err := c.inner.GetRecentMatches(ctx, platform, gamertag, title, mode)
 	if err != nil {
 		if isTransientError(err) {
 			if val, ok := c.getStale(key); ok {

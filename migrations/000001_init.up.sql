@@ -28,7 +28,7 @@ CREATE TABLE squad_members (
 
 CREATE TABLE matches (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    match_id        VARCHAR(100) NOT NULL UNIQUE,
+    match_id        VARCHAR(100) NOT NULL,
     player_id       UUID NOT NULL REFERENCES players(id) ON DELETE CASCADE,
     mode            VARCHAR(50),
     map_name        VARCHAR(100),
@@ -51,6 +51,7 @@ CREATE TABLE player_stats (
     fetched_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE UNIQUE INDEX idx_matches_match_player ON matches(match_id, player_id);
 CREATE INDEX idx_matches_player_id ON matches(player_id);
 CREATE INDEX idx_matches_match_time ON matches(match_time);
 CREATE INDEX idx_player_stats_player_mode ON player_stats(player_id, mode);

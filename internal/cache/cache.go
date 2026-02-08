@@ -96,6 +96,11 @@ func (c *CachedClient) GetRecentMatches(ctx context.Context, platform, gamertag 
 	return matches, nil
 }
 
+// UpdateToken passes through to the inner client.
+func (c *CachedClient) UpdateToken(newToken string) {
+	c.inner.UpdateToken(newToken)
+}
+
 // CacheInfo returns hit/miss status and age for use in response headers.
 func (c *CachedClient) CacheInfo(key string) (hit bool, ageSeconds int, stale bool) {
 	c.mu.RLock()

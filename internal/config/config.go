@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseURL        string
 	CodAPIBaseURL      string
 	CodSSOToken        string
+	AdminAPIKey        string
 	CORSAllowedOrigins string
 	LogLevelStr        string
 }
@@ -22,6 +23,7 @@ func Load() (*Config, error) {
 		DatabaseURL:        getEnv("DATABASE_URL", ""),
 		CodAPIBaseURL:      getEnv("COD_API_BASE_URL", "https://my.callofduty.com/api/papi-client"),
 		CodSSOToken:        getEnv("COD_SSO_TOKEN", ""),
+		AdminAPIKey:        getEnv("ADMIN_API_KEY", ""),
 		CORSAllowedOrigins: getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5173"),
 		LogLevelStr:        getEnv("LOG_LEVEL", "info"),
 	}

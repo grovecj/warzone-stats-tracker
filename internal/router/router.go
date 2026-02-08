@@ -13,7 +13,13 @@ import (
 	"github.com/grovecj/warzone-stats-tracker/internal/middleware"
 )
 
-func New(allowedOrigins []string, staticFS fs.FS) http.Handler {
+// Deps holds dependencies injected into the router.
+type Deps struct {
+	AdminHandler *handler.AdminHandler
+	AdminAPIKey  string
+}
+
+func New(allowedOrigins []string, staticFS fs.FS, deps Deps) http.Handler {
 	r := chi.NewRouter()
 
 	// Global middleware
@@ -22,7 +28,7 @@ func New(allowedOrigins []string, staticFS fs.FS) http.Handler {
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Content-Type", "X-Requested-With"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Requested-With"},
 		ExposedHeaders:   []string{"X-Request-ID", "X-Cache", "X-Data-Age"},
 		AllowCredentials: false,
 		MaxAge:           300,
@@ -42,6 +48,14 @@ func New(allowedOrigins []string, staticFS fs.FS) http.Handler {
 
 		// Comparison routes (issue #14)
 		r.Get("/compare", handler.NotImplemented)
+
+		// Admin routes (protected by ADMIN_API_KEY)
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(middleware.AdminAuth(deps.AdminAPIKey))
+			if deps.AdminHandler != nil {
+				r.Post("/token", deps.AdminHandler.UpdateToken)
+			}
+		})
 
 		// Squad routes (issue #16)
 		r.Route("/squads", func(r chi.Router) {

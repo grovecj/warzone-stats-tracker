@@ -65,6 +65,12 @@ variable "cod_sso_token" {
   sensitive   = true
 }
 
+variable "admin_api_key" {
+  description = "API key for protecting admin endpoints (e.g., token refresh)"
+  type        = string
+  sensitive   = true
+}
+
 # -----------------------------------------------------------------------------
 # Domain (optional)
 # -----------------------------------------------------------------------------

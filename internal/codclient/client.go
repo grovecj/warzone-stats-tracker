@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"resty.dev/v3"
@@ -20,11 +21,13 @@ const (
 type CodClient interface {
 	GetPlayerStats(ctx context.Context, platform, gamertag, mode string) (*PlayerStats, error)
 	GetRecentMatches(ctx context.Context, platform, gamertag string) ([]Match, error)
+	UpdateToken(newToken string)
 }
 
 type client struct {
 	http    *resty.Client
 	baseURL string
+	mu      sync.RWMutex
 }
 
 // New creates a new CoD API client.
@@ -123,6 +126,17 @@ func (c *client) GetRecentMatches(ctx context.Context, platform, gamertag string
 	}
 
 	return matches, nil
+}
+
+// UpdateToken replaces the SSO token at runtime (for admin token refresh).
+func (c *client) UpdateToken(newToken string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.http.SetCookie(&http.Cookie{
+		Name:  "ACT_SSO_COOKIE",
+		Value: newToken,
+	})
+	slog.Info("cod api sso token updated")
 }
 
 func (c *client) checkResponse(resp *resty.Response) error {

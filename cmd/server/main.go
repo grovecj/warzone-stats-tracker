@@ -16,6 +16,7 @@ import (
 	"github.com/grovecj/warzone-stats-tracker/internal/codclient"
 	"github.com/grovecj/warzone-stats-tracker/internal/config"
 	"github.com/grovecj/warzone-stats-tracker/internal/database"
+	"github.com/grovecj/warzone-stats-tracker/internal/handler"
 	"github.com/grovecj/warzone-stats-tracker/internal/router"
 	"github.com/grovecj/warzone-stats-tracker/web"
 )
@@ -50,7 +51,7 @@ func main() {
 
 	// CoD API client with caching
 	codAPI := codclient.New(cfg.CodAPIBaseURL, cfg.CodSSOToken)
-	_ = cache.New(codAPI, cache.DefaultConfig())
+	cachedAPI := cache.New(codAPI, cache.DefaultConfig())
 
 	// Static files — use embedded FS in production, nil in dev (Vite proxy handles it)
 	var staticFS fs.FS
@@ -61,13 +62,19 @@ func main() {
 		}
 	}
 
+	// Handlers
+	adminHandler := handler.NewAdminHandler(cachedAPI)
+
 	// Router
 	origins := strings.Split(cfg.CORSAllowedOrigins, ",")
-	handler := router.New(origins, staticFS)
+	mux := router.New(origins, staticFS, router.Deps{
+		AdminHandler: adminHandler,
+		AdminAPIKey:  cfg.AdminAPIKey,
+	})
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Port),
-		Handler:      handler,
+		Handler:      mux,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 		IdleTimeout:  60 * time.Second,

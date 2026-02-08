@@ -22,8 +22,12 @@ postgres_cluster_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # Call of Duty SSO Token
 # Obtain from: Log into my.callofduty.com → DevTools → Application → Cookies → ACT_SSO_COOKIE
-# Expires every ~14 days — update when it does
+# Expires every ~14 days — refresh via POST /api/v1/admin/token or update here and redeploy
 cod_sso_token = "your-sso-token-here"
+
+# Admin API Key — protects admin endpoints (token refresh, etc.)
+# Generate: openssl rand -hex 32
+admin_api_key = "your-admin-api-key-here"
 
 # Custom domain (optional — leave empty to use DO default domain)
 # domain_name = "warzone.yourdomain.com"

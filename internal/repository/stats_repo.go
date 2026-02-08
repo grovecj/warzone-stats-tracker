@@ -1,3 +1,3 @@
 package repository
 
-// Stats snapshot data access layer will be implemented in issue #5.
+// Stats snapshot storage is handled by PlayerRepo.SaveStatsSnapshot and PlayerRepo.GetLatestStats.

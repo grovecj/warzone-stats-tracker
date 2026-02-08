@@ -1,85 +1,106 @@
 <script setup lang="ts">
+import { darkTheme, type GlobalThemeOverrides } from 'naive-ui'
+import {
+  NConfigProvider,
+  NLayout,
+  NLayoutHeader,
+  NLayoutContent,
+  NSpace,
+  NText,
+} from 'naive-ui'
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: '#00e5ff',
+    primaryColorHover: '#18ffff',
+    primaryColorPressed: '#00b8d4',
+    primaryColorSuppl: '#00e5ff',
+    bodyColor: '#0a0a0f',
+    cardColor: '#12121a',
+    modalColor: '#12121a',
+    popoverColor: '#12121a',
+    tableColor: '#12121a',
+    inputColor: '#1a1a28',
+    borderColor: '#2a2a3a',
+    textColorBase: '#e0e0e0',
+    textColor1: '#ffffff',
+    textColor2: '#b0b0c0',
+    textColor3: '#707088',
+  },
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
-    </div>
-  </header>
-
-  <RouterView />
+  <NConfigProvider :theme="darkTheme" :theme-overrides="themeOverrides">
+    <NLayout class="app-layout">
+      <NLayoutHeader class="app-header" bordered>
+        <div class="header-content">
+          <RouterLink to="/" class="logo">
+            <NText :depth="1" class="logo-text">WZ Stats</NText>
+          </RouterLink>
+          <NSpace :size="24" align="center">
+            <RouterLink to="/" class="nav-link">
+              <NText :depth="2">Home</NText>
+            </RouterLink>
+            <RouterLink to="/compare" class="nav-link">
+              <NText :depth="2">Compare</NText>
+            </RouterLink>
+            <RouterLink to="/squads" class="nav-link">
+              <NText :depth="2">Squads</NText>
+            </RouterLink>
+          </NSpace>
+        </div>
+      </NLayoutHeader>
+      <NLayoutContent class="app-content" content-style="padding: 24px;">
+        <RouterView />
+      </NLayoutContent>
+    </NLayout>
+  </NConfigProvider>
 </template>
 
 <style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+.app-layout {
+  min-height: 100vh;
+}
+
+.app-header {
+  padding: 0 24px;
+  background: #0d0d14;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .logo {
-  display: block;
-  margin: 0 auto 2rem;
+  text-decoration: none;
 }
 
-nav {
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #00e5ff !important;
+}
+
+.nav-link {
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.nav-link:hover {
+  opacity: 0.8;
+}
+
+.app-content {
+  max-width: 1200px;
+  margin: 0 auto;
   width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
 }
 </style>

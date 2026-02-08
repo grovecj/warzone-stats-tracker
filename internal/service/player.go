@@ -1,3 +1,3 @@
 package service
 
-// Player business logic will be implemented in issues #9, #10.
+// Player business logic will be implemented in issue #9.

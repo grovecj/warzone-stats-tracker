@@ -12,10 +12,18 @@ export const usePlayerStore = defineStore('player', () => {
     loading.value = true
     error.value = null
     try {
-      const res = await fetch(`/api/v1/players/${platform}/${gamertag}/stats?mode=${mode}`)
+      const tag = encodeURIComponent(gamertag)
+      const res = await fetch(`/api/v1/players/${platform}/${tag}/stats?mode=${encodeURIComponent(mode)}`)
       if (!res.ok) {
-        const body = await res.json()
-        throw new Error(body.message || 'Failed to fetch stats')
+        const text = await res.text()
+        let message = 'Failed to fetch stats'
+        try {
+          const body = JSON.parse(text)
+          message = body.message || message
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message)
       }
       stats.value = await res.json()
     } catch (e: unknown) {
@@ -29,10 +37,18 @@ export const usePlayerStore = defineStore('player', () => {
     loading.value = true
     error.value = null
     try {
-      const res = await fetch(`/api/v1/players/${platform}/${gamertag}/matches`)
+      const tag = encodeURIComponent(gamertag)
+      const res = await fetch(`/api/v1/players/${platform}/${tag}/matches`)
       if (!res.ok) {
-        const body = await res.json()
-        throw new Error(body.message || 'Failed to fetch matches')
+        const text = await res.text()
+        let message = 'Failed to fetch matches'
+        try {
+          const body = JSON.parse(text)
+          message = body.message || message
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message)
       }
       matches.value = await res.json()
     } catch (e: unknown) {

@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -10,8 +11,14 @@ import (
 	"github.com/grovecj/warzone-stats-tracker/internal/codclient"
 )
 
+// isTransientError returns true for errors where serving stale cache is appropriate.
+func isTransientError(err error) bool {
+	return errors.Is(err, codclient.ErrAPIUnavailable) || errors.Is(err, codclient.ErrRateLimited)
+}
+
 type entry struct {
 	value     any
+	createdAt time.Time
 	expiresAt time.Time
 }
 
@@ -63,10 +70,12 @@ func (c *CachedClient) GetPlayerStats(ctx context.Context, platform, gamertag, m
 
 	stats, err := c.inner.GetPlayerStats(ctx, platform, gamertag, mode)
 	if err != nil {
-		// Serve stale data if available
-		if val, ok := c.getStale(key); ok {
-			slog.Warn("serving stale cache due to API error", "key", key, "error", err)
-			return val.(*codclient.PlayerStats), nil
+		// Only serve stale data for transient errors (API down, rate limited)
+		if isTransientError(err) {
+			if val, ok := c.getStale(key); ok {
+				slog.Warn("serving stale cache due to API error", "key", key, "error", err)
+				return val.(*codclient.PlayerStats), nil
+			}
 		}
 		return nil, err
 	}
@@ -85,9 +94,11 @@ func (c *CachedClient) GetRecentMatches(ctx context.Context, platform, gamertag 
 
 	matches, err := c.inner.GetRecentMatches(ctx, platform, gamertag)
 	if err != nil {
-		if val, ok := c.getStale(key); ok {
-			slog.Warn("serving stale cache due to API error", "key", key, "error", err)
-			return val.([]codclient.Match), nil
+		if isTransientError(err) {
+			if val, ok := c.getStale(key); ok {
+				slog.Warn("serving stale cache due to API error", "key", key, "error", err)
+				return val.([]codclient.Match), nil
+			}
 		}
 		return nil, err
 	}
@@ -111,7 +122,7 @@ func (c *CachedClient) CacheInfo(key string) (hit bool, ageSeconds int, stale bo
 		return false, 0, false
 	}
 
-	age := int(time.Since(e.expiresAt.Add(-c.statsTTL)).Seconds())
+	age := int(time.Since(e.createdAt).Seconds())
 	if age < 0 {
 		age = 0
 	}
@@ -145,9 +156,11 @@ func (c *CachedClient) set(key string, value any, ttl time.Duration) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	now := time.Now()
 	c.store[key] = entry{
 		value:     value,
-		expiresAt: time.Now().Add(ttl),
+		createdAt: now,
+		expiresAt: now.Add(ttl),
 	}
 }
 

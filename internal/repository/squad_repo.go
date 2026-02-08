@@ -61,6 +61,9 @@ func (r *SquadRepo) GetByID(ctx context.Context, id string) (*model.Squad, error
 		}
 		s.Members = append(s.Members, p)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
 
 	return &s, nil
 }

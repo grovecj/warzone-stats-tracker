@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"runtime/debug"
@@ -15,7 +16,12 @@ func Recovery(next http.Handler) http.Handler {
 					"stack", string(debug.Stack()),
 					"path", r.URL.Path,
 				)
-				http.Error(w, `{"error":"internal_server_error","message":"An unexpected error occurred"}`, http.StatusInternalServerError)
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(http.StatusInternalServerError)
+				json.NewEncoder(w).Encode(map[string]string{
+					"error":   "internal_server_error",
+					"message": "An unexpected error occurred",
+				})
 			}
 		}()
 		next.ServeHTTP(w, r)

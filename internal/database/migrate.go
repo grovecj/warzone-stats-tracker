@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
@@ -29,5 +30,10 @@ func RunMigrations(databaseURL, migrationsPath string) error {
 }
 
 func pgxConnString(databaseURL string) string {
-	return "pgx5://" + databaseURL[len("postgres://"):]
+	u, err := url.Parse(databaseURL)
+	if err != nil {
+		return databaseURL
+	}
+	u.Scheme = "pgx5"
+	return u.String()
 }

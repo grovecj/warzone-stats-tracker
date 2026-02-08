@@ -1,3 +1,6 @@
+-- gen_random_uuid() is built-in since PostgreSQL 13. For older versions, uncomment:
+-- CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE players (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     platform        VARCHAR(10) NOT NULL,

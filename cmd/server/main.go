@@ -66,7 +66,13 @@ func main() {
 	adminHandler := handler.NewAdminHandler(cachedAPI)
 
 	// Router
-	origins := strings.Split(cfg.CORSAllowedOrigins, ",")
+	rawOrigins := strings.Split(cfg.CORSAllowedOrigins, ",")
+	var origins []string
+	for _, o := range rawOrigins {
+		if trimmed := strings.TrimSpace(o); trimmed != "" {
+			origins = append(origins, trimmed)
+		}
+	}
 	mux := router.New(origins, staticFS, router.Deps{
 		AdminHandler: adminHandler,
 		AdminAPIKey:  cfg.AdminAPIKey,

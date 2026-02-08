@@ -19,8 +19,11 @@ func NewMatchRepo(pool *pgxpool.Pool) *MatchRepo {
 
 func (r *MatchRepo) UpsertBatch(ctx context.Context, playerID string, matches []model.Match) error {
 	for _, m := range matches {
-		rawJSON, _ := json.Marshal(m)
-		_, err := r.pool.Exec(ctx, `
+		rawJSON, err := json.Marshal(m)
+		if err != nil {
+			return err
+		}
+		_, err = r.pool.Exec(ctx, `
 			INSERT INTO matches (match_id, player_id, mode, map_name, placement, kills, deaths,
 				damage_dealt, damage_taken, gulag_result, match_time, raw_data)
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
@@ -45,7 +48,7 @@ func (r *MatchRepo) GetByPlayerID(ctx context.Context, playerID string, limit, o
 			damage_dealt, damage_taken, gulag_result, match_time, created_at
 		FROM matches
 		WHERE player_id = $1
-		ORDER BY match_time DESC
+		ORDER BY match_time DESC NULLS LAST
 		LIMIT $2 OFFSET $3
 	`, playerID, limit, offset)
 	if err != nil {
@@ -62,6 +65,9 @@ func (r *MatchRepo) GetByPlayerID(ctx context.Context, playerID string, limit, o
 			return nil, err
 		}
 		matches = append(matches, m)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return matches, nil
 }

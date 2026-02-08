@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"encoding/json"
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -30,7 +32,10 @@ func NewRateLimiter(limit int, window time.Duration) *RateLimiter {
 
 func (rl *RateLimiter) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ip := r.RemoteAddr
+		ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+		if ip == "" {
+			ip = r.RemoteAddr
+		}
 
 		rl.mu.Lock()
 		v, exists := rl.visitors[ip]
@@ -45,7 +50,12 @@ func (rl *RateLimiter) Handler(next http.Handler) http.Handler {
 		v.lastSeen = time.Now()
 		if v.count > rl.limit {
 			rl.mu.Unlock()
-			http.Error(w, `{"error":"rate_limited","message":"Too many requests"}`, http.StatusTooManyRequests)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusTooManyRequests)
+			json.NewEncoder(w).Encode(map[string]string{
+				"error":   "rate_limited",
+				"message": "Too many requests",
+			})
 			return
 		}
 		rl.mu.Unlock()

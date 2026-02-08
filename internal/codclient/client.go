@@ -28,6 +28,7 @@ type client struct {
 	http    *resty.Client
 	baseURL string
 	mu      sync.RWMutex
+	token   string
 }
 
 // New creates a new CoD API client.
@@ -40,12 +41,14 @@ func New(baseURL, ssoToken string) CodClient {
 	c.SetRetryMaxWaitTime(5 * time.Second)
 	c.SetHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
 	c.SetHeader("Accept", "application/json")
-	c.SetCookie(&http.Cookie{
-		Name:  "ACT_SSO_COOKIE",
-		Value: ssoToken,
-	})
 
-	return &client{http: c, baseURL: baseURL}
+	return &client{http: c, baseURL: baseURL, token: ssoToken}
+}
+
+func (c *client) authCookie() *http.Cookie {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return &http.Cookie{Name: "ACT_SSO_COOKIE", Value: c.token}
 }
 
 func (c *client) GetPlayerStats(ctx context.Context, platform, gamertag, mode string) (*PlayerStats, error) {
@@ -59,6 +62,7 @@ func (c *client) GetPlayerStats(ctx context.Context, platform, gamertag, mode st
 
 	resp, err := c.http.R().
 		SetContext(ctx).
+		SetCookie(c.authCookie()).
 		Get(endpoint)
 	if err != nil {
 		slog.Error("cod api request failed", "endpoint", endpoint, "error", err)
@@ -85,6 +89,7 @@ func (c *client) GetRecentMatches(ctx context.Context, platform, gamertag string
 
 	resp, err := c.http.R().
 		SetContext(ctx).
+		SetCookie(c.authCookie()).
 		Get(endpoint)
 	if err != nil {
 		slog.Error("cod api request failed", "endpoint", endpoint, "error", err)
@@ -132,10 +137,7 @@ func (c *client) GetRecentMatches(ctx context.Context, platform, gamertag string
 func (c *client) UpdateToken(newToken string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.http.SetCookie(&http.Cookie{
-		Name:  "ACT_SSO_COOKIE",
-		Value: newToken,
-	})
+	c.token = newToken
 	slog.Info("cod api sso token updated")
 }
 

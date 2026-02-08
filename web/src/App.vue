@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { darkTheme, type GlobalThemeOverrides } from 'naive-ui'
 import {
   NConfigProvider,
@@ -7,8 +8,16 @@ import {
   NLayoutContent,
   NSpace,
   NText,
+  NAlert,
 } from 'naive-ui'
 import { RouterLink, RouterView } from 'vue-router'
+
+const showBanner = ref(sessionStorage.getItem('wz-hide-banner') !== '1')
+
+function dismissBanner() {
+  showBanner.value = false
+  sessionStorage.setItem('wz-hide-banner', '1')
+}
 
 const themeOverrides: GlobalThemeOverrides = {
   common: {
@@ -52,6 +61,12 @@ const themeOverrides: GlobalThemeOverrides = {
           </NSpace>
         </div>
       </NLayoutHeader>
+      <div v-if="showBanner" class="demo-banner-wrapper">
+        <NAlert type="warning" closable @close="dismissBanner">
+          <strong>Demo Mode</strong> — The Activision stats API was shut down in 2024.
+          All player data shown here is generated sample data for demonstration purposes.
+        </NAlert>
+      </div>
       <NLayoutContent class="app-content" content-style="padding: 24px;">
         <RouterView />
       </NLayoutContent>
@@ -96,6 +111,14 @@ const themeOverrides: GlobalThemeOverrides = {
 
 .nav-link:hover {
   opacity: 0.8;
+}
+
+.demo-banner-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 24px 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .app-content {

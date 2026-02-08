@@ -65,6 +65,21 @@ const platformLabels: Record<string, string> = {
   steam: 'Steam',
 }
 
+const demoPlayers = [
+  { gamertag: 'TacticalNuke99', platform: 'xbl', label: 'Elite' },
+  { gamertag: 'ShadowSniper_TTV', platform: 'psn', label: 'Skilled' },
+  { gamertag: 'GhostRecon42', platform: 'uno', label: 'Above Avg' },
+  { gamertag: 'CasualCarl', platform: 'xbl', label: 'Average' },
+  { gamertag: 'NoobMaster69', platform: 'battle', label: 'Casual' },
+]
+
+function goToDemo(demo: { gamertag: string; platform: string }) {
+  platform.value = demo.platform
+  gamertag.value = demo.gamertag
+  game.value = 'wz'
+  search()
+}
+
 onMounted(() => {
   loadRecentSearches()
 })
@@ -167,8 +182,26 @@ function goToRecent(recent: RecentSearch) {
       </NSpace>
     </NCard>
 
+    <div class="demo-players">
+      <NText :depth="3" class="section-title">Demo Players</NText>
+      <div class="demo-list">
+        <NButton
+          v-for="demo in demoPlayers"
+          :key="demo.gamertag"
+          quaternary
+          size="small"
+          @click="goToDemo(demo)"
+        >
+          {{ demo.gamertag }}
+          <NText :depth="3" style="margin-left: 4px; font-size: 11px">
+            {{ platformLabels[demo.platform] }} &middot; {{ demo.label }}
+          </NText>
+        </NButton>
+      </div>
+    </div>
+
     <div v-if="recentSearches.length > 0" class="recent-searches">
-      <NText :depth="3" class="recent-title">Recent Searches</NText>
+      <NText :depth="3" class="section-title">Recent Searches</NText>
       <div class="recent-list">
         <NButton
           v-for="recent in recentSearches"
@@ -222,6 +255,7 @@ function goToRecent(recent: RecentSearch) {
   max-width: 480px;
 }
 
+.demo-players,
 .recent-searches {
   margin-top: 32px;
   width: 100%;
@@ -229,7 +263,7 @@ function goToRecent(recent: RecentSearch) {
   text-align: center;
 }
 
-.recent-title {
+.section-title {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -237,6 +271,7 @@ function goToRecent(recent: RecentSearch) {
   margin-bottom: 12px;
 }
 
+.demo-list,
 .recent-list {
   display: flex;
   flex-wrap: wrap;

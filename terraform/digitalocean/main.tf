@@ -86,6 +86,12 @@ resource "digitalocean_app" "warzone_stats_tracker" {
       }
 
       env {
+        key   = "ADMIN_API_KEY"
+        value = var.admin_api_key
+        type  = "SECRET"
+      }
+
+      env {
         key   = "PORT"
         value = "8080"
       }

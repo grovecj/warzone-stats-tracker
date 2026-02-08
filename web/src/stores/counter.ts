@@ -18,8 +18,8 @@ export const usePlayerStore = defineStore('player', () => {
         throw new Error(body.message || 'Failed to fetch stats')
       }
       stats.value = await res.json()
-    } catch (e: any) {
-      error.value = e.message
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'An unexpected error occurred'
     } finally {
       loading.value = false
     }
@@ -35,8 +35,8 @@ export const usePlayerStore = defineStore('player', () => {
         throw new Error(body.message || 'Failed to fetch matches')
       }
       matches.value = await res.json()
-    } catch (e: any) {
-      error.value = e.message
+    } catch (e: unknown) {
+      error.value = e instanceof Error ? e.message : 'An unexpected error occurred'
     } finally {
       loading.value = false
     }
